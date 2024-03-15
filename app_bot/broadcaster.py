@@ -55,11 +55,21 @@ class Broadcaster(object):
 
 
     @classmethod
-    async def send_content_to_users(cls, bot: Bot, is_for_registered_only: bool, message: types.Message | None = None,
-                                    broadcaster_post: Post | None = None):
+    async def send_content_to_users(
+            cls,
+            bot: Bot,
+            is_for_registered_only: bool = True,
+            is_for_all_users: bool = False,
+            message: types.Message | None = None,
+            broadcaster_post: Post | None = None
+    ):
         sent_amount = 0
 
-        users_ids = await User.filter(is_registered=is_for_registered_only).all()
+        if is_for_all_users:
+            users_ids = await User.all()
+        else:
+            users_ids = await User.filter(is_registered=is_for_registered_only).all()
+
         if not users_ids:
             return sent_amount
 
@@ -94,11 +104,19 @@ class Broadcaster(object):
             return
 
         # sending
-        await cls.send_content_to_users(
-            bot=bot,
-            broadcaster_post=post,
-            is_for_registered_only=order.is_for_registered_only
-        )
+        if order.user_id:  # for notifications
+            try:
+                await cls.__send_content_message(post=post, user_id=order.user_id)
+            except Exception as e:
+                logger.error(f'Error in mailing from admin panel, user_id={order.user_id}', exc_info=e)
+
+        else:  # mailing
+            await cls.send_content_to_users(
+                bot=bot,
+                broadcaster_post=post,
+                is_for_registered_only=order.is_for_registered_only,
+                is_for_all_users=order.is_for_all_users,
+            )
 
         # delete order
         try:

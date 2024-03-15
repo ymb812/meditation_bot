@@ -1,11 +1,13 @@
+import datetime
 import logging
 from aiogram import Bot, types, Router, exceptions
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, StateFilter
-from core.states.register import RegistrationStateGroup
+from aiogram_dialog import DialogManager, StartMode
+from core.states.registration import RegistrationStateGroup
 from core.states.support import SupportStateGroup
 from core.utils.texts import set_user_commands, set_admin_commands, _
-from core.database.models import User, Post
+from core.database.models import User, Post, Dispatcher
 from core.keyboards.inline import menu_kb, support_kb
 from settings import settings
 
@@ -25,7 +27,7 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
         logger.info(f'user_id={message.from_user.id} is not in the chat')
         channel_link = await bot.create_chat_invite_link(chat_id=settings.required_channel_id)
         await message.answer(
-            text=_('NOT_FOLLOWED', chat_link=channel_link.invite_link)
+            text=_('NOT_FOLLOWED', channel_link=channel_link.invite_link)
         )
         return
 
@@ -49,6 +51,14 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
     else:
         await set_user_commands(bot=bot, scope=types.BotCommandScopeChat(chat_id=message.from_user.id))
 
+    # create order for notification if there is no
+    if not (await Dispatcher.get_or_none(post_id=settings.notification_post_id, user_id=message.from_user.id)):
+        await Dispatcher.create(
+            post_id=settings.notification_post_id,
+            user_id=message.from_user.id,
+            send_at=datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        )
+
     # send welcome msg from DB
     welcome_post = await Post.get(id=settings.welcome_post_id)
     await message.answer_video_note(video_note=welcome_post.video_note_id)
@@ -56,12 +66,10 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
 
 
 # register support
-@router.callback_query(lambda c: c.data in ['register','support'])
-async def menu_handler(callback: types.CallbackQuery, state: FSMContext):
+@router.callback_query(lambda c: c.data in ['register', 'support'])
+async def menu_handler(callback: types.CallbackQuery, state: FSMContext, dialog_manager: DialogManager):
     # going to the register or support FSM
     if callback.data == 'register':
-        await callback.message.answer(text=_('FIO_INPUT'))
-        await state.set_state(RegistrationStateGroup.fio_input)
+        await dialog_manager.start(state=RegistrationStateGroup.fio_input, mode=StartMode.RESET_STACK)
     else:
-        await callback.message.answer(text=_('QUESTION_INPUT'))
-        await state.set_state(SupportStateGroup.question_input)
+        await dialog_manager.start(state=SupportStateGroup.question_input, mode=StartMode.RESET_STACK)
