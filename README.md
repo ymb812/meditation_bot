@@ -1,1 +1,1 @@
-# meditation_bot
+# Bot with admin-panel is entrypoint for course
