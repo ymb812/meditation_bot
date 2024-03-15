@@ -9,17 +9,17 @@ class User(models.Model):
         verbose_name_plural = verbose_name
 
     user_id = models.BigIntegerField(primary_key=True, db_index=True)
-    username = models.CharField(max_length=32, null=True)
+    username = models.CharField(max_length=32, null=True, blank=True)
     is_registered = models.BooleanField(default=False)
-    fio = models.CharField(max_length=64, null=True)
-    email = models.CharField(max_length=64, null=True)
-    phone = models.CharField(max_length=16, null=True)
-    status = models.CharField(max_length=32, null=True)
+    fio = models.CharField(max_length=64, null=True, blank=True)
+    email = models.CharField(max_length=64, null=True, blank=True)
+    phone = models.CharField(max_length=16, null=True, blank=True)
+    status = models.CharField(max_length=32, null=True, blank=True)
 
     first_name = models.CharField(max_length=64)
-    last_name = models.CharField(max_length=64, null=True)
-    language_code = models.CharField(max_length=2, null=True)
-    is_premium = models.BooleanField(null=True)
+    last_name = models.CharField(max_length=64, null=True, blank=True)
+    language_code = models.CharField(max_length=2, null=True, blank=True)
+    is_premium = models.BooleanField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -54,6 +54,8 @@ class Dispatcher(models.Model):
     id = models.BigAutoField(primary_key=True)
     post = models.ForeignKey('Post', to_field='id', on_delete=models.CASCADE)
     is_for_registered_only = models.BooleanField(default=True)
+    is_for_all_users = models.BooleanField(default=True)
+    to_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     send_at = models.DateTimeField()
 
     def __str__(self):

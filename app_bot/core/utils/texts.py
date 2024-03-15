@@ -11,10 +11,6 @@ def _(text: str, **kwargs):
 async def set_user_commands(bot: Bot, scope: BotCommandScopeChat):
     commands = [
         BotCommand(
-            command='cancel',
-            description=_('CANCEL_COMMAND')
-        ),
-        BotCommand(
             command='start',
             description=_('START_COMMAND')
         ),
@@ -25,10 +21,6 @@ async def set_user_commands(bot: Bot, scope: BotCommandScopeChat):
 
 async def set_admin_commands(bot: Bot, scope: BotCommandScopeChat):
     commands = [
-        BotCommand(
-            command='cancel',
-            description=_('CANCEL_COMMAND')
-        ),
         BotCommand(
             command='start',
             description=_('START_COMMAND')

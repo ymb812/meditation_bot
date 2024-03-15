@@ -7,6 +7,7 @@ class BotSettings(BaseModel):
     admin_password: SecretStr = fields.Field(max_length=100, alias='ADMIN_PASSWORD')
     required_channel_id: str = fields.Field(alias='REQUIRED_CHANNEL_ID')
     welcome_post_id: int = fields.Field(alias='WELCOME_POST_ID')
+    notification_post_id: int = fields.Field(alias='NOTIFICATION_POST_ID')
 
 
 class Broadcaster(BaseModel):
