@@ -1,10 +1,11 @@
 import asyncio
 import core.middlewares
 from aiogram import Bot, Dispatcher
-from aiogram_dialog import Dialog, Window, setup_dialogs, DialogManager
+from aiogram_dialog import setup_dialogs
 from settings import settings
 from setup import register
 from core.handlers import routers
+from core.dialogs import dialogues
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 
 
@@ -18,7 +19,7 @@ dp = Dispatcher(storage=storage)
 core.middlewares.i18n.setup(dp)
 setup_dialogs(dp)
 
-for _r in routers:
+for _r in routers + dialogues:
     dp.include_router(_r)
 
 
