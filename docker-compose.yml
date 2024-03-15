@@ -1,0 +1,67 @@
+version: '3.3'
+
+services:
+  postgres:
+    image: 'postgres:13'
+    container_name: bot_with_django_postgres
+    restart: 'always'
+    env_file:
+      - .env
+    ports:
+      - '5433:5432'
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    networks:
+      - bot_with_django_db
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - '63479:6379'
+    volumes:
+      - ./redis:/root/redis
+    networks:
+      - bot_with_django_db
+
+  web:
+    build:
+      context: .
+      dockerfile: DockerfileAdmin
+    container_name: bot_with_django_django
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    networks:
+      - bot_with_django_db
+
+  bot:
+    build:
+      context: .
+      dockerfile: DockerfileBot
+    container_name: bot_with_django_bot
+    restart: 'always'
+    networks:
+      - bot_with_django_db
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+
+  broadcaster:
+    build:
+      context: .
+      dockerfile: DockerfileBroadcaster
+    container_name: bot_with_django_broadcaster
+    restart: 'always'
+    networks:
+      - bot_with_django_db
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+
+networks:
+  bot_with_django_db:

@@ -1,0 +1,17 @@
+FROM python:3.11.1-slim-buster
+
+WORKDIR /app_admin_panel
+
+RUN apt-get update && apt-get install -y netcat
+
+COPY admin-entrypoint.sh /app_admin_panel/docker-entrypoint.sh
+RUN chmod +x /app_admin_panel/docker-entrypoint.sh
+
+COPY requirements.txt /app_admin_panel/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade -r /app_admin_panel/requirements.txt
+
+WORKDIR /app_admin_panel/code
+COPY ./app_admin_panel /app_admin_panel/code
+
+ENTRYPOINT ["bash", "/app_admin_panel/docker-entrypoint.sh"]

@@ -1,0 +1,18 @@
+FROM python:3.11.1-slim-buster
+
+WORKDIR /app_bot
+
+RUN apt-get update && apt-get install -y netcat
+
+COPY bot-entrypoint.sh /app_bot/docker-entrypoint.sh
+RUN chmod +x /app_bot/docker-entrypoint.sh
+
+COPY requirements.txt /app_bot/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade -r /app_bot/requirements.txt
+
+WORKDIR /app_bot/code
+COPY ./app_bot /app_bot/code
+RUN pybabel compile -d locales -D messages;
+
+ENTRYPOINT ["bash", "/app_bot/docker-entrypoint.sh"]
