@@ -55,7 +55,8 @@ class Broadcaster(object):
 
 
     @classmethod
-    async def send_content_to_users(cls, bot: Bot, is_for_registered_only: bool, message: types.Message | None = None,
+    async def send_content_to_users(cls, bot: Bot, is_for_registered_only: bool = True,
+                                    message: types.Message | None = None,
                                     broadcaster_post: Post | None = None):
         sent_amount = 0
 
