@@ -1,3 +1,4 @@
+import datetime
 import logging
 from aiogram import Bot, types, Router, exceptions
 from aiogram.fsm.context import FSMContext
@@ -6,7 +7,7 @@ from aiogram_dialog import DialogManager, StartMode
 from core.states.registration import RegistrationStateGroup
 from core.states.support import SupportStateGroup
 from core.utils.texts import set_user_commands, set_admin_commands, _
-from core.database.models import User, Post
+from core.database.models import User, Post, Dispatcher
 from core.keyboards.inline import menu_kb, support_kb
 from settings import settings
 
@@ -26,7 +27,7 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
         logger.info(f'user_id={message.from_user.id} is not in the chat')
         channel_link = await bot.create_chat_invite_link(chat_id=settings.required_channel_id)
         await message.answer(
-            text=_('NOT_FOLLOWED', chat_link=channel_link.invite_link)
+            text=_('NOT_FOLLOWED', channel_link=channel_link.invite_link)
         )
         return
 
@@ -49,6 +50,14 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
         await set_admin_commands(bot=bot, scope=types.BotCommandScopeChat(chat_id=message.from_user.id))
     else:
         await set_user_commands(bot=bot, scope=types.BotCommandScopeChat(chat_id=message.from_user.id))
+
+    # create order for notification if there is no
+    if not (await Dispatcher.get_or_none(post_id=settings.notification_post_id, user_id=message.from_user.id)):
+        await Dispatcher.create(
+            post_id=settings.notification_post_id,
+            user_id=message.from_user.id,
+            send_at=datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        )
 
     # send welcome msg from DB
     welcome_post = await Post.get(id=settings.welcome_post_id)

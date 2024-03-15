@@ -4,9 +4,10 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button, Select
 from core.states.registration import RegistrationStateGroup
-from core.database.models import User, SupportRequest
+from core.database.models import User, SupportRequest, Dispatcher
 from core.keyboards.inline import support_kb
 from core.utils.texts import _
+from settings import settings
 
 
 class CallBackHandler:
@@ -81,12 +82,16 @@ class CallBackHandler:
         else:
             phone = message.text.strip()
 
-        if not (11 <= len(phone) <= 12 and phone.replace('+', '').isdigit()):
+        if not (11 <= len(phone) <= 12 and phone.replace('+', '').isdigit() and
+                (phone[0] == '+' and phone[1] == '7' or phone[0] == '8')):
             dialog_manager.dialog_data['error'] = 'phone_error'
             return
 
         await message.answer(text=_('REGISTERED'), reply_markup=ReplyKeyboardRemove())
         await message.answer(text=_('CHECK_QUESTION'), reply_markup=support_kb())
+
+        # delete notification order
+        await Dispatcher.filter(post_id=settings.notification_post_id, user_id=message.from_user.id).delete()
 
         # add reg data to DB
         await User.filter(user_id=message.from_user.id).update(

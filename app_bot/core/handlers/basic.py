@@ -21,15 +21,6 @@ async def init_for_id(message: types.Message):
     await msg.delete()
 
 
-@router.message(Command(commands=['cancel']))
-async def cmd_cancel(message: types.Message, state: FSMContext):
-    if (await state.get_state()) is not None:
-        await message.answer(text=_('CANCELED'))
-    else:
-        await message.answer(text=_('CANCEL_MSG'))
-    await state.clear()
-
-
 # admin login
 @router.message(Command(commands=['admin']))
 async def admin_login(message: types.Message, state: FSMContext, command: CommandObject, bot: Bot):

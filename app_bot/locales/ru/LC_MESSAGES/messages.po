@@ -105,11 +105,15 @@ msgstr "Приветственное сообщение + ссылка на ви
 
 
 msgid "FIO_INPUT"
-msgstr "Введите Ваше ФИО"
+msgstr "Введите Ваше ФИО\n\n"
+"<i>Пример: Иванов Иван Иванович</i>"
+
 
 
 msgid "EMAIL_INPUT"
-msgstr "Введите Вашу почту"
+msgstr "Введите Вашу почту\n\n"
+
+"<i>Пример: mail@gmail.com</i>"
 
 
 msgid "PHONE_INPUT"
@@ -137,15 +141,21 @@ msgstr "Спасибо! В ближайшее время мы с Вами свя
 
 
 msgid "FIO_WRONG_INPUT"
-msgstr "Введите корректное ФИО"
+msgstr "Введите корректное ФИО\n\n"
+
+"<i>Пример: Иванов Иван Иванович</i>"
 
 
 msgid "EMAIL_WRONG_INPUT"
-msgstr "Введите корректную почту"
+msgstr "Введите корректную почту\n\n"
+
+"<i>Пример: mail@gmail.com</i>"
 
 
 msgid "PHONE_WRONG_INPUT"
-msgstr "Введите корректный номер"
+msgstr "Введите корректный номер\n\n"
+
+"<i>Пример: +79119119911</i>"
 
 
 # format
