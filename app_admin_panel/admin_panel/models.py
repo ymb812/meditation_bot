@@ -55,7 +55,7 @@ class Dispatcher(models.Model):
     post = models.ForeignKey('Post', to_field='id', on_delete=models.CASCADE)
     is_for_registered_only = models.BooleanField(default=True)
     is_for_all_users = models.BooleanField(default=True)
-    to_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     send_at = models.DateTimeField()
 
     def __str__(self):
