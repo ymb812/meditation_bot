@@ -73,6 +73,10 @@ msgid "SHARE_CONTACT_BUTTON"
 msgstr "Подтвердить номер телефона"
 
 
+msgid "FOLLOWED_BUTTON"
+msgstr "✅ Подписался"
+
+
 # texts
 msgid "CANCEL_MSG"
 msgstr "Никакие цепочки процессов не запущены. Отменять нечего."
