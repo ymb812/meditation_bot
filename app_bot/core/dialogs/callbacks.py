@@ -78,10 +78,10 @@ class CallBackHandler:
     ):
         data = dialog_manager.dialog_data
 
-        # send welcome msg from DB
-        welcome_post = await Post.get_or_none(id=settings.registered_post_id)
-        if welcome_post:
-            await callback.message.answer(text=welcome_post.text, reply_markup=ReplyKeyboardRemove())
+        # send already_registered msg from DB
+        registered_post = await Post.get_or_none(id=settings.registered_post_id)
+        if registered_post:
+            await callback.message.answer(text=registered_post.text, reply_markup=ReplyKeyboardRemove())
         else:
             await callback.message.answer(text=_('REGISTERED'), reply_markup=ReplyKeyboardRemove())
 
