@@ -34,18 +34,6 @@ registration_dialog = Dialog(
         state=RegistrationStateGroup.email_input,
     ),
 
-    # confirm
-    Window(
-        Format(text=_('CONFIRM_INPUT_DATA',
-                      fio='{data[fio]}',
-                      email='{data[email]}')
-               ),
-        Button(Const(text=_('CONFIRM_BUTTON')), id='switch_to_phone', on_click=CallBackHandler.selected_content),
-        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_email', state=RegistrationStateGroup.email_input),
-        getter=get_input_data,
-        state=RegistrationStateGroup.confirm,
-    ),
-
     # phone input
     Window(
         Const(text=_('PHONE_INPUT'), when=F['dialog_data'].get('error') == None),
@@ -58,5 +46,18 @@ registration_dialog = Dialog(
             resize_keyboard=True
         ),
         state=RegistrationStateGroup.phone_input,
+    ),
+
+    # confirm
+    Window(
+        Format(text=_('CONFIRM_INPUT_DATA',
+                      fio='{data[fio]}',
+                      phone='{data[phone]}',
+                      email='{data[email]}',)
+               ),
+        Button(Const(text=_('CONFIRM_BUTTON')), id='end_of_reg', on_click=CallBackHandler.confirm_data),
+        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_phone', state=RegistrationStateGroup.phone_input),
+        getter=get_input_data,
+        state=RegistrationStateGroup.confirm,
     ),
 )

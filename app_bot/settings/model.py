@@ -5,9 +5,11 @@ from pydantic_settings import SettingsConfigDict
 class BotSettings(BaseModel):
     bot_token: SecretStr = fields.Field(max_length=100, alias='TELEGRAM_BOT_TOKEN')
     admin_password: SecretStr = fields.Field(max_length=100, alias='ADMIN_PASSWORD')
+    admin_chat_id: str = fields.Field(alias='ADMIN_CHAT_ID')
     required_channel_id: str = fields.Field(alias='REQUIRED_CHANNEL_ID')
     welcome_post_id: int = fields.Field(alias='WELCOME_POST_ID')
     notification_post_id: int = fields.Field(alias='NOTIFICATION_POST_ID')
+    registered_post_id: int = fields.Field(alias='REGISTERED_POST_ID')
 
 
 class Broadcaster(BaseModel):

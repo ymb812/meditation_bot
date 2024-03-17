@@ -83,7 +83,7 @@ class Post(Model):
         table = 'static_content'
 
     id = fields.BigIntField(pk=True)
-    text = fields.CharField(max_length=256, null=True)
+    text = fields.TextField(null=True)
     photo_file_id = fields.CharField(max_length=256, null=True)
     video_file_id = fields.CharField(max_length=256, null=True)
     video_note_id = fields.CharField(max_length=256, null=True)
