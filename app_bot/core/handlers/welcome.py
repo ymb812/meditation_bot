@@ -21,9 +21,8 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
     await state.clear()
 
     # check channel for user
-    try:
-        await bot.get_chat_member(user_id=message.from_user.id, chat_id=settings.required_channel_id)
-    except exceptions.TelegramBadRequest:
+    chat_member = await bot.get_chat_member(user_id=message.from_user.id, chat_id=settings.required_channel_id)
+    if chat_member.status not in ['creator', 'administrator', 'member', 'restricted']:
         logger.info(f'user_id={message.from_user.id} is not in the chat')
         channel_link = await bot.create_chat_invite_link(chat_id=settings.required_channel_id)
         await message.answer(
