@@ -28,6 +28,24 @@ class CallBackHandler:
 
         value: str
         dialog_manager.dialog_data['fio'] = value
+        await dialog_manager.switch_to(state=RegistrationStateGroup.email_input)
+
+
+    @staticmethod
+    async def entered_email(
+            message: Message,
+            widget: ManagedTextInput,
+            dialog_manager: DialogManager,
+            value,
+    ):
+        # correct checker
+        email = message.text.strip()
+        email_regex = '^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$'
+        if not re.match(email_regex, email):
+            return
+
+        value: str
+        dialog_manager.dialog_data['email'] = value
         await dialog_manager.switch_to(state=RegistrationStateGroup.phone_input)
 
 
@@ -48,24 +66,6 @@ class CallBackHandler:
             return
 
         dialog_manager.dialog_data['phone'] = phone
-        await dialog_manager.switch_to(state=RegistrationStateGroup.email_input)
-
-
-    @staticmethod
-    async def entered_email(
-            message: Message,
-            widget: ManagedTextInput,
-            dialog_manager: DialogManager,
-            value,
-    ):
-        # correct checker
-        email = message.text.strip()
-        email_regex = '^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$'
-        if not re.match(email_regex, email):
-            return
-
-        value: str
-        dialog_manager.dialog_data['email'] = value
         await dialog_manager.switch_to(state=RegistrationStateGroup.confirm)
 
 
