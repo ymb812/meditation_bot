@@ -69,11 +69,11 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
         registered_post = await Post.get_or_none(id=settings.registered_post_id)
         if registered_post:
             await bot.send_message(
-                chat_id=callback.from_user.id, text=registered_post.text, reply_markup=types.ReplyKeyboardRemove()
+                chat_id=callback.from_user.id, text=registered_post.text, reply_markup=support_kb()
             )
         else:
             await bot.send_message(
-                chat_id=callback.from_user.id, text=_('REGISTERED'), reply_markup=types.ReplyKeyboardRemove()
+                chat_id=callback.from_user.id, text=_('REGISTERED'), reply_markup=support_kb()
             )
         return
 

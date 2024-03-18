@@ -62,7 +62,7 @@ msgstr "Запустить"
 
 
 msgid "REGISTER_BUTTON"
-msgstr "Зарегистрироваться на курс"
+msgstr "Три шага для регистрации"
 
 
 msgid "SUPPORT_BUTTON"

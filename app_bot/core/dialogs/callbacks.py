@@ -60,11 +60,6 @@ class CallBackHandler:
         else:
             phone = message.text.strip()
 
-        if not (11 <= len(phone) <= 12 and phone.replace('+', '').isdigit() and
-                (phone[0] == '+' and phone[1] == '7' or phone[0] == '8')):
-            dialog_manager.dialog_data['error'] = 'phone_error'
-            return
-
         dialog_manager.dialog_data['phone'] = phone
         await dialog_manager.switch_to(state=RegistrationStateGroup.confirm)
 
