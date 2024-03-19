@@ -51,11 +51,11 @@ class Dispatcher(models.Model):
         verbose_name = 'Рассылки'
         verbose_name_plural = verbose_name
 
-    id = models.BigAutoField(primary_key=True)
+    id = models.BigIntegerField(primary_key=True)
     post = models.ForeignKey('Post', to_field='id', on_delete=models.CASCADE)
     is_for_registered_only = models.BooleanField(default=True)
     is_for_all_users = models.BooleanField(default=True)
-    to_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     send_at = models.DateTimeField()
 
     def __str__(self):
@@ -69,8 +69,8 @@ class Post(models.Model):
         verbose_name = 'Контент для рассылок'
         verbose_name_plural = verbose_name
 
-    id = models.BigAutoField(primary_key=True)
-    text = models.CharField(max_length=256, blank=True, null=True)
+    id = models.BigIntegerField(primary_key=True)
+    text = models.TextField(blank=True, null=True)
     photo_file_id = models.CharField(max_length=256, blank=True, null=True)
     video_file_id = models.CharField(max_length=256, blank=True, null=True)
     video_note_id = models.CharField(max_length=256, blank=True, null=True)

@@ -34,29 +34,26 @@ registration_dialog = Dialog(
         state=RegistrationStateGroup.email_input,
     ),
 
+    # phone input
+    Window(
+        Const(text=_('PHONE_INPUT')),
+        RequestContact(Const(text=_('SHARE_CONTACT_BUTTON'))),
+        MessageInput(func=CallBackHandler.entered_phone),
+        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_email', state=RegistrationStateGroup.email_input),
+        markup_factory=ReplyKeyboardFactory(resize_keyboard=True),
+        state=RegistrationStateGroup.phone_input,
+    ),
+
     # confirm
     Window(
         Format(text=_('CONFIRM_INPUT_DATA',
                       fio='{data[fio]}',
-                      email='{data[email]}')
+                      phone='{data[phone]}',
+                      email='{data[email]}',)
                ),
-        Button(Const(text=_('CONFIRM_BUTTON')), id='switch_to_phone', on_click=CallBackHandler.selected_content),
-        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_email', state=RegistrationStateGroup.email_input),
+        Button(Const(text=_('CONFIRM_BUTTON')), id='end_of_reg', on_click=CallBackHandler.confirm_data),
+        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_phone', state=RegistrationStateGroup.phone_input),
         getter=get_input_data,
         state=RegistrationStateGroup.confirm,
-    ),
-
-    # phone input
-    Window(
-        Const(text=_('PHONE_INPUT'), when=F['dialog_data'].get('error') == None),
-        Const(text=_('PHONE_WRONG_INPUT'), when=F['dialog_data']['error'] == 'phone_error'),
-        RequestContact(Const(text=_('SHARE_CONTACT_BUTTON'))),
-        MessageInput(func=CallBackHandler.entered_phone),
-        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_email', state=RegistrationStateGroup.email_input),
-        markup_factory=ReplyKeyboardFactory(
-            input_field_placeholder=Const('+79119119911'),
-            resize_keyboard=True
-        ),
-        state=RegistrationStateGroup.phone_input,
     ),
 )

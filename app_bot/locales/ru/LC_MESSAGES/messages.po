@@ -62,7 +62,7 @@ msgstr "Запустить"
 
 
 msgid "REGISTER_BUTTON"
-msgstr "Зарегистрироваться на курс"
+msgstr "Три шага для регистрации"
 
 
 msgid "SUPPORT_BUTTON"
@@ -70,7 +70,11 @@ msgstr "Связаться с менеджером"
 
 
 msgid "SHARE_CONTACT_BUTTON"
-msgstr "Поделиться контактом"
+msgstr "Подтвердить номер телефона"
+
+
+msgid "FOLLOWED_BUTTON"
+msgstr "✅ Подписался"
 
 
 # texts
@@ -105,19 +109,16 @@ msgstr "Приветственное сообщение + ссылка на ви
 
 
 msgid "FIO_INPUT"
-msgstr "Введите Ваше ФИО\n\n"
-"<i>Пример: Иванов Иван Иванович</i>"
+msgstr "1️⃣ имя"
 
 
 
 msgid "EMAIL_INPUT"
-msgstr "Введите Вашу почту\n\n"
-
-"<i>Пример: mail@gmail.com</i>"
+msgstr "2️⃣ напишите свою электронную почту"
 
 
 msgid "PHONE_INPUT"
-msgstr "Нажмите кнопочку ниже, и Вы успешно зарегистрированы!"
+msgstr "3️⃣ подтвердите свой номер телефона по кнопке ниже или просто напишите его в ответ на это сообщение"
 
 
 msgid "REGISTERED"
@@ -160,7 +161,7 @@ msgstr "Введите корректный номер\n\n"
 
 # format
 msgid "NOT_FOLLOWED"
-msgstr "Взаимодействие с ботом доступно после подписки на канал:\n"
+msgstr "Для начала подпишитесь на канал Веры:\n"
 "{channel_link}"
 
 
@@ -179,4 +180,10 @@ msgid "CONFIRM_INPUT_DATA"
 msgstr "Данные введены верно?\n\n"
 
 "<b>ФИО:</b> {fio}\n"
+"<b>Телефон:</b> {phone}\n"
 "<b>Почта:</b> {email}\n"
+
+
+msgid "QUESTION_FROM_USER"
+msgstr "<b>ℹ️ Вопрос от пользователя {username}</b>\n\n"
+"{question}"
