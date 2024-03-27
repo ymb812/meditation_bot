@@ -92,9 +92,11 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
             send_at=send_at,
         )
 
-    # send welcome msg from DB
+    # send 2 welcome msgs from DB
     welcome_post = await Post.get(id=settings.welcome_post_id)
+    welcome_post_id_2 = await Post.get(id=settings.welcome_post_id_2)
     await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post.video_note_id)
+    await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post_id_2.video_note_id)
     await bot.send_message(chat_id=callback.from_user.id, text=welcome_post.text, reply_markup=menu_kb())
 
 
