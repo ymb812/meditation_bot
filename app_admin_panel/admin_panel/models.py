@@ -11,6 +11,7 @@ class User(models.Model):
     user_id = models.BigIntegerField(primary_key=True, db_index=True)
     username = models.CharField(max_length=32, null=True, blank=True)
     is_registered = models.BooleanField(default=False)
+    is_user_agreement_accepted = models.BooleanField(default=False)
     fio = models.CharField(max_length=64, null=True, blank=True)
     email = models.CharField(max_length=64, null=True, blank=True)
     phone = models.CharField(max_length=16, null=True, blank=True)

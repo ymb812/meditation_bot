@@ -8,7 +8,7 @@ from core.states.registration import RegistrationStateGroup
 from core.states.support import SupportStateGroup
 from core.utils.texts import set_user_commands, set_admin_commands, _
 from core.database.models import User, Post, Dispatcher
-from core.keyboards.inline import menu_kb, support_kb, followed_kb
+from core.keyboards.inline import menu_kb, support_kb, followed_kb, approved_kb
 from settings import settings
 
 
@@ -18,8 +18,13 @@ router = Router(name='Start router')
 
 
 @router.message(Command(commands=['start']), StateFilter(None))
-async def start_handler(message: types.Message, bot: Bot, state: FSMContext):
+async def start_handler(message: types.Message, bot: Bot, state: FSMContext, dialog_manager: DialogManager):
     await state.clear()
+    try:
+        await dialog_manager.reset_stack()
+    except:
+        pass
+
 
     # check channel for user
     chat_member = await bot.get_chat_member(user_id=message.from_user.id, chat_id=settings.required_channel_id)
@@ -64,6 +69,17 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
     )
 
     user = await User.get(user_id=callback.from_user.id)
+
+    # send user_agreement if user has not approved it yet
+    if not user.is_user_agreement_accepted:
+        user_agreement_post = await Post.get(id=settings.user_agreement_post_id)
+        await message.answer_document(
+            document=user_agreement_post.document_file_id,
+            caption='Примите пользовательское соглашение',
+            reply_markup=approved_kb(),
+        )
+        return
+
     if user.is_registered:
         # send already_registered msg from DB
         registered_post = await Post.get_or_none(id=settings.registered_post_id)
@@ -83,7 +99,7 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
         await set_user_commands(bot=bot, scope=types.BotCommandScopeChat(chat_id=callback.from_user.id))
 
     # create order for notification if there is no
-    send_at=datetime.datetime.now() - datetime.timedelta(hours=1)
+    send_at = datetime.datetime.now() - datetime.timedelta(hours=1)
     logger.info(f'{send_at}')
     if not (await Dispatcher.get_or_none(post_id=settings.notification_post_id, user_id=callback.from_user.id)):
         await Dispatcher.create(

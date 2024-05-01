@@ -14,6 +14,7 @@ class User(Model):
     user_id = fields.BigIntField(pk=True, index=True)
     username = fields.CharField(max_length=32, index=True, null=True)
     is_registered = fields.BooleanField(default=False)
+    is_user_agreement_accepted = fields.BooleanField(default=False)
     fio = fields.CharField(max_length=64, null=True)
     email = fields.CharField(max_length=64, null=True)
     phone = fields.CharField(max_length=16, null=True)
