@@ -3,6 +3,8 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button, Select
+from aiogram_dialog.api.entities import ShowMode
+from core.states.main_menu import MainMenuStateGroup
 from core.states.registration import RegistrationStateGroup
 from core.database.models import User, SupportRequest, Dispatcher, Post
 from core.keyboards.inline import support_kb
@@ -11,6 +13,86 @@ from settings import settings
 
 
 class CallBackHandler:
+    @staticmethod
+    async def start_meditation(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        # send 2 welcome msgs from DB
+        bot = dialog_manager.event.bot
+        welcome_post = await Post.get(id=settings.welcome_post_id)
+        welcome_post_id_2 = await Post.get(id=settings.welcome_post_id_2)
+        await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post.video_note_id)
+        await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post_id_2.video_note_id)
+
+        dialog_manager.dialog_data['welcome_post_text'] = welcome_post.text
+        dialog_manager.dialog_data['reg_type'] = 'meditation'
+
+        await dialog_manager.switch_to(MainMenuStateGroup.meditation, show_mode=ShowMode.DELETE_AND_SEND)
+
+
+    @staticmethod
+    async def start_days(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        dialog_manager.dialog_data['welcome_post_text_1'] = 'Вводное сообщение для дней'
+        dialog_manager.dialog_data['welcome_post_text_2'] = 'В 1 месяц выдаем счастливые даты и тд бесплатно'
+        dialog_manager.dialog_data['reg_type'] = 'days'
+
+        await dialog_manager.switch_to(MainMenuStateGroup.days_1, show_mode=ShowMode.DELETE_AND_SEND)
+
+
+    @staticmethod
+    async def start_registration_meditation(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        user = await User.get(user_id=callback.from_user.id)
+
+        # send already registered msg from DB - for meditation
+        if user.is_registered_meditation:
+            registered_post = await Post.get_or_none(id=settings.registered_post_id)
+            if registered_post:
+                await dialog_manager.event.bot.send_message(
+                    chat_id=callback.from_user.id, text=registered_post.text, reply_markup=support_kb()
+                )
+            else:
+                await dialog_manager.event.bot.send_message(
+                    chat_id=callback.from_user.id, text=_('REGISTERED'), reply_markup=support_kb()
+                )
+
+            await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
+
+        else:
+            # going to the registration with start data of reg_type
+            await dialog_manager.start(state=RegistrationStateGroup.fio_input, data=dialog_manager.dialog_data)
+
+    @staticmethod
+    async def start_registration_days(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        user = await User.get(user_id=callback.from_user.id)
+
+        # send already registered msg from DB - for days
+        if user.is_registered_days:
+            await callback.message.answer('Вы уже зарегистрированы на счастливые дни - ожидайте уведомления')
+            await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
+
+        else:
+            # going to the registration with start data of reg_type
+            await dialog_manager.start(state=RegistrationStateGroup.fio_input, data=dialog_manager.dialog_data)
+
+
     @staticmethod
     async def entered_fio(
             message: Message,
@@ -71,29 +153,37 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        data = dialog_manager.dialog_data
+        user = await User.get(user_id=callback.from_user.id)
 
-        # send already_registered msg from DB
-        registered_post = await Post.get_or_none(id=settings.registered_post_id)
-        if registered_post:
-            await callback.message.answer(text=registered_post.text, reply_markup=ReplyKeyboardRemove())
-        else:
-            await callback.message.answer(text=_('REGISTERED'), reply_markup=ReplyKeyboardRemove())
+        # check registration type (meditation/days)
+        if dialog_manager.start_data['reg_type'] == 'meditation':
+            user.is_registered_meditation = True
+        elif dialog_manager.start_data['reg_type'] == 'days':
+            user.is_registered_days = True
+        user.fio = dialog_manager.dialog_data['fio']
+        user.phone = dialog_manager.dialog_data['phone']
+        user.email = dialog_manager.dialog_data['email']
+        await user.save()
 
-        await callback.message.answer(text=_('CHECK_QUESTION'), reply_markup=support_kb())
+        # send registered msg for meditations
+        if dialog_manager.start_data['reg_type'] == 'meditation':
+            registered_post = await Post.get_or_none(id=settings.registered_post_id)
+            if registered_post:
+                await callback.message.answer(text=registered_post.text, reply_markup=ReplyKeyboardRemove())
+            else:
+                await callback.message.answer(text=_('REGISTERED'), reply_markup=ReplyKeyboardRemove())
+
+            await callback.message.answer(text=_('CHECK_QUESTION'), reply_markup=support_kb())
+
+        # send already_registered msg for days (text or file with days)
+        elif dialog_manager.start_data['reg_type'] == 'days':
+            await callback.message.answer(text='Вы успешно зарегистрированы!')
+            await callback.message.answer(text='*здесь будет файл/текст с счастливыми днями*')
 
         # delete notification order
         await Dispatcher.filter(post_id=settings.notification_post_id, user_id=callback.from_user.id).delete()
 
-        # add reg data to DB
-        await User.filter(user_id=callback.from_user.id).update(
-            is_registered=True,
-            fio=data['fio'],
-            phone=data['phone'],
-            email=data['email'],
-        )
-
-        await dialog_manager.done()
+        await dialog_manager.start(state=MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
 
 
     @staticmethod

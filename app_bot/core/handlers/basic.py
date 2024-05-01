@@ -3,6 +3,7 @@ import asyncio
 from aiogram import types, Router, F, Bot
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
+from aiogram_dialog import DialogManager
 from settings import settings
 from core.database.models import User
 from core.utils.texts import set_admin_commands, _
@@ -33,10 +34,10 @@ async def admin_login(message: types.Message, state: FSMContext, command: Comman
 
 
 @router.callback_query(F.data == 'approve_agreement')
-async def approve_handler(callback: types.CallbackQuery, bot: Bot):
+async def approve_handler(callback: types.CallbackQuery, bot: Bot, dialog_manager: DialogManager):
     await User.filter(user_id=callback.from_user.id).update(
         is_user_agreement_accepted=True,
     )
 
     await callback.message.edit_reply_markup(reply_markup=None)
-    await followed_handler(callback=callback, bot=bot)
+    await followed_handler(callback=callback, bot=bot, dialog_manager=dialog_manager)

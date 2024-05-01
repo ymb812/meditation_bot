@@ -4,11 +4,12 @@ from aiogram import Bot, types, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, StateFilter
 from aiogram_dialog import DialogManager, StartMode
+from core.states.main_menu import MainMenuStateGroup
 from core.states.registration import RegistrationStateGroup
 from core.states.support import SupportStateGroup
 from core.utils.texts import set_user_commands, set_admin_commands, _
 from core.database.models import User, Post, Dispatcher
-from core.keyboards.inline import menu_kb, support_kb, followed_kb, approved_kb
+from core.keyboards.inline import support_kb, followed_kb, approved_kb
 from settings import settings
 
 
@@ -37,12 +38,12 @@ async def start_handler(message: types.Message, bot: Bot, state: FSMContext, dia
         return
 
     # followed handler
-    await followed_handler(message=message, bot=bot)
+    await followed_handler(message=message, bot=bot, dialog_manager=dialog_manager)
 
 
 @router.callback_query(F.data == 'followed')
 async def followed_handler(callback: types.CallbackQuery | None = None, message: types.Message | None = None,
-                           bot: Bot = None):
+                           bot: Bot = None, dialog_manager: DialogManager = None):
     if message:
         callback = message
 
@@ -80,19 +81,6 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
         )
         return
 
-    if user.is_registered:
-        # send already_registered msg from DB
-        registered_post = await Post.get_or_none(id=settings.registered_post_id)
-        if registered_post:
-            await bot.send_message(
-                chat_id=callback.from_user.id, text=registered_post.text, reply_markup=support_kb()
-            )
-        else:
-            await bot.send_message(
-                chat_id=callback.from_user.id, text=_('REGISTERED'), reply_markup=support_kb()
-            )
-        return
-
     if user.status == 'admin':
         await set_admin_commands(bot=bot, scope=types.BotCommandScopeChat(chat_id=callback.from_user.id))
     else:
@@ -108,19 +96,5 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
             send_at=send_at,
         )
 
-    # send 2 welcome msgs from DB
-    welcome_post = await Post.get(id=settings.welcome_post_id)
-    welcome_post_id_2 = await Post.get(id=settings.welcome_post_id_2)
-    await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post.video_note_id)
-    await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post_id_2.video_note_id)
-    await bot.send_message(chat_id=callback.from_user.id, text=welcome_post.text, reply_markup=menu_kb())
-
-
-# register support
-@router.callback_query(lambda c: c.data in ['register', 'support'])
-async def menu_handler(callback: types.CallbackQuery, state: FSMContext, dialog_manager: DialogManager):
-    # going to the register or support FSM
-    if callback.data == 'register':
-        await dialog_manager.start(state=RegistrationStateGroup.fio_input, mode=StartMode.RESET_STACK)
-    else:
-        await dialog_manager.start(state=SupportStateGroup.question_input, mode=StartMode.RESET_STACK)
+    # going to the main menu
+    await dialog_manager.start(state=MainMenuStateGroup.main_menu, mode=StartMode.RESET_STACK)
