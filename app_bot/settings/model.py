@@ -8,6 +8,7 @@ class BotSettings(BaseModel):
     admin_chat_id: str = fields.Field(alias='ADMIN_CHAT_ID')
     required_channel_id: str = fields.Field(alias='REQUIRED_CHANNEL_ID')
     welcome_post_id: int = fields.Field(alias='WELCOME_POST_ID')
+    welcome_post_id_2: int = fields.Field(alias='WELCOME_POST_ID_2')
     notification_post_id: int = fields.Field(alias='NOTIFICATION_POST_ID')
     registered_post_id: int = fields.Field(alias='REGISTERED_POST_ID')
 
