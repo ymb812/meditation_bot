@@ -2,27 +2,37 @@ version: '3.3'
 
 services:
   postgres:
-    image: 'postgres:13'
+    image: postgres:latest
+    environment:
+      TZ: Europe/Moscow
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    
     container_name: bot_with_django_postgres
     restart: 'always'
-    env_file:
-      - .env
     ports:
-      - '5433:5432'
+      - '5432'
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
     networks:
       - bot_with_django_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      interval: 5s
+      timeout: 30s
+      retries: 5
 
   redis:
     image: redis:latest
     restart: always
     ports:
-      - '63479:6379'
+      - '6379'
     volumes:
       - ./redis:/root/redis
     networks:
       - bot_with_django_db
+
 
   web:
     build:
@@ -36,19 +46,34 @@ services:
       - '8000:8000'
     networks:
       - bot_with_django_db
+    environment:
+      DB_HOST: postgres
+      TZ: Europe/Moscow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   bot:
     build:
       context: .
       dockerfile: DockerfileBot
-    container_name: bot_with_django_bot
+    container_name: dot_with_django_bot
     restart: 'always'
     networks:
       - bot_with_django_db
-    depends_on:
-      - postgres
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      TZ: Europe/Moscow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   broadcaster:
     build:
@@ -58,10 +83,16 @@ services:
     restart: 'always'
     networks:
       - bot_with_django_db
-    depends_on:
-      - postgres
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
+      TZ: Europe/Moscow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
 networks:
   bot_with_django_db:
