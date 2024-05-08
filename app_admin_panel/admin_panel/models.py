@@ -83,3 +83,19 @@ class Post(models.Model):
 
     def __str__(self):
         return f'{self.id}'
+
+
+class MailingLog(models.Model):
+    class Meta:
+        db_table = 'mailings_logs'
+        ordering = ['created_at']
+        verbose_name = 'Итоги последней рассылки'
+        verbose_name_plural = verbose_name
+
+    id = models.AutoField(primary_key=True, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_sent = models.BooleanField(verbose_name='Рассылку получил?')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.id}'
