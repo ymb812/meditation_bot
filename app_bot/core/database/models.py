@@ -74,7 +74,8 @@ class Dispatcher(Model):
 
     id = fields.BigIntField(pk=True)
     post = fields.ForeignKeyField('models.Post', to_field='id')
-    is_for_registered_only = fields.BooleanField(default=True)
+    is_registered_meditation = fields.BooleanField(default=False)
+    is_registered_days = fields.BooleanField(default=False)
     is_for_all_users = fields.BooleanField(default=False)
     user = fields.ForeignKeyField('models.User', to_field='user_id', null=True)
     send_at = fields.DatetimeField()
