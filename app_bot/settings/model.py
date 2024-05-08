@@ -12,6 +12,7 @@ class BotSettings(BaseModel):
     notification_post_id: int = fields.Field(alias='NOTIFICATION_POST_ID')
     registered_post_id: int = fields.Field(alias='REGISTERED_POST_ID')
     user_agreement_post_id: str = fields.Field(alias='USER_AGREEMENT_POST_ID')
+    days_post_id: int = fields.Field(alias='DAYS_POST_ID')
 
 
 class Broadcaster(BaseModel):

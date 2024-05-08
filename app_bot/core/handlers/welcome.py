@@ -77,7 +77,7 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
         await bot.send_document(
             chat_id=callback.from_user.id,
             document=user_agreement_post.document_file_id,
-            caption='Примите пользовательское соглашение',
+            caption=user_agreement_post.text,
             reply_markup=approved_kb(),
         )
         return

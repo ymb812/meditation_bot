@@ -85,7 +85,8 @@ class CallBackHandler:
 
         # send already registered msg from DB - for days
         if user.is_registered_days:
-            await callback.message.answer('Вы уже зарегистрированы на счастливые дни - ожидайте уведомления')
+            days_post = await Post.get_or_none(id=settings.days_post_id)
+            await callback.message.answer_photo(photo=days_post.photo_file_id, caption=days_post.text)
             await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
 
         else:
@@ -177,8 +178,8 @@ class CallBackHandler:
 
         # send already_registered msg for days (text or file with days)
         elif dialog_manager.start_data['reg_type'] == 'days':
-            await callback.message.answer(text='Вы успешно зарегистрированы!')
-            await callback.message.answer(text='*здесь будет файл/текст с счастливыми днями*')
+            days_post = await Post.get_or_none(id=settings.days_post_id)
+            await callback.message.answer_photo(photo=days_post.photo_file_id, caption=days_post.text)
 
         # delete notification order
         await Dispatcher.filter(post_id=settings.notification_post_id, user_id=callback.from_user.id).delete()
