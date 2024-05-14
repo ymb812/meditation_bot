@@ -13,7 +13,9 @@ class User(Model):
 
     user_id = fields.BigIntField(pk=True, index=True)
     username = fields.CharField(max_length=32, index=True, null=True)
-    is_registered = fields.BooleanField(default=False)
+    is_registered_meditation = fields.BooleanField(default=False)
+    is_registered_days = fields.BooleanField(default=False)
+    is_user_agreement_accepted = fields.BooleanField(default=False)
     fio = fields.CharField(max_length=64, null=True)
     email = fields.CharField(max_length=64, null=True)
     phone = fields.CharField(max_length=16, null=True)
@@ -72,7 +74,8 @@ class Dispatcher(Model):
 
     id = fields.BigIntField(pk=True)
     post = fields.ForeignKeyField('models.Post', to_field='id')
-    is_for_registered_only = fields.BooleanField(default=True)
+    is_registered_meditation = fields.BooleanField(default=False)
+    is_registered_days = fields.BooleanField(default=False)
     is_for_all_users = fields.BooleanField(default=False)
     user = fields.ForeignKeyField('models.User', to_field='user_id', null=True)
     send_at = fields.DatetimeField()

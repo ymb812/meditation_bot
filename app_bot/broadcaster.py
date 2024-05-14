@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from tortoise.expressions import Q
 from datetime import datetime
 from aiogram import Bot, types
 from aiogram.utils.i18n import I18n
@@ -58,7 +59,8 @@ class Broadcaster(object):
     async def send_content_to_users(
             cls,
             bot: Bot,
-            is_for_registered_only: bool = True,
+            is_registered_meditation: bool = True,
+            is_registered_days: bool = True,
             is_for_all_users: bool = False,
             message: types.Message | None = None,
             broadcaster_post: Post | None = None
@@ -68,7 +70,9 @@ class Broadcaster(object):
         if is_for_all_users:
             users_ids = await User.all()
         else:
-            users_ids = await User.filter(is_registered=is_for_registered_only).all()
+            users_ids = await User.filter(
+                Q(is_registered_meditation=is_registered_meditation) | Q(is_registered_days=is_registered_days),
+            ).all()
 
         if not users_ids:
             return sent_amount
@@ -114,7 +118,8 @@ class Broadcaster(object):
             await cls.send_content_to_users(
                 bot=bot,
                 broadcaster_post=post,
-                is_for_registered_only=order.is_for_registered_only,
+                is_registered_meditation=order.is_registered_meditation,
+                is_registered_days=order.is_registered_days,
                 is_for_all_users=order.is_for_all_users,
             )
 

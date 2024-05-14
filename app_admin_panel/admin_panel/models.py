@@ -10,7 +10,9 @@ class User(models.Model):
 
     user_id = models.BigIntegerField(primary_key=True, db_index=True)
     username = models.CharField(max_length=32, null=True, blank=True)
-    is_registered = models.BooleanField(default=False)
+    is_registered_meditation = models.BooleanField(default=False, verbose_name='Медитации')
+    is_registered_days = models.BooleanField(default=False, verbose_name='Счастливые дни')
+    is_user_agreement_accepted = models.BooleanField(default=False, verbose_name='Пользовательское соглашение')
     fio = models.CharField(max_length=64, null=True, blank=True)
     email = models.CharField(max_length=64, null=True, blank=True)
     phone = models.CharField(max_length=16, null=True, blank=True)
@@ -51,10 +53,11 @@ class Dispatcher(models.Model):
         verbose_name = 'Рассылки'
         verbose_name_plural = verbose_name
 
-    id = models.BigIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     post = models.ForeignKey('Post', to_field='id', on_delete=models.CASCADE)
-    is_for_registered_only = models.BooleanField(default=True)
-    is_for_all_users = models.BooleanField(default=True)
+    is_registered_meditation = models.BooleanField(default=False, verbose_name='Медитации')
+    is_registered_days = models.BooleanField(default=False, verbose_name='Счастливые даты')
+    is_for_all_users = models.BooleanField(default=False, verbose_name='Всем пользователям')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     send_at = models.DateTimeField()
 

@@ -18,9 +18,10 @@ class UserResource(ModelResource):
 @admin.register(User)
 class UserAdmin(CustomImportExport):
     resource_classes = [UserResource]
-    list_display = ('user_id', 'first_name', 'created_at', 'is_registered')
+    list_display = ('user_id', 'first_name', 'created_at', 'is_registered_meditation', 'is_registered_days')
     list_display_links = ('user_id', 'first_name',)
-
+    list_editable = ('is_registered_meditation', 'is_registered_days')
+    list_filter = ('is_registered_meditation', 'is_registered_days')
 
 @admin.register(SupportRequest)
 class SupportRequestAdmin(CustomImportExport):
@@ -30,6 +31,7 @@ class SupportRequestAdmin(CustomImportExport):
 @admin.register(Dispatcher)
 class OrderAdmin(CustomImportExport):
     list_display = [field.name for field in Dispatcher._meta.fields]
+    list_editable = ('is_registered_meditation', 'is_registered_days', 'is_for_all_users')
 
 
 @admin.register(Post)
