@@ -98,3 +98,13 @@ class Post(Model):
     @classmethod
     async def get_posts_by_scenario(cls, scenario_id: int):
         return await cls.filter(id=scenario_id).all()
+
+
+class MailingLog(Model):
+    class Meta:
+        table = 'mailings_logs'
+
+    id = fields.BigIntField(pk=True)
+    user = fields.ForeignKeyField('models.User', to_field='user_id')
+    is_sent = fields.BooleanField()
+    created_at = fields.DatetimeField(auto_now_add=True)

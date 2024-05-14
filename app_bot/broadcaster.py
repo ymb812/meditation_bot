@@ -2,10 +2,10 @@ import asyncio
 import logging
 from tortoise.expressions import Q
 from datetime import datetime
-from aiogram import Bot, types
+from aiogram import Bot, types, exceptions
 from aiogram.utils.i18n import I18n
 from core.database import init
-from core.database.models import User, Dispatcher, Post
+from core.database.models import User, Dispatcher, Post, MailingLog
 from settings import settings
 
 
@@ -26,7 +26,7 @@ class Broadcaster(object):
 
 
     @staticmethod
-    async def __send_content_message(post: Post, user_id: int):
+    async def __send_content_message(post: Post, user_id: int) -> bool:
         try:
             if not post.photo_file_id and not post.video_file_id and not post.sticker_file_id \
                     and not post.video_note_id and not post.document_file_id and post.text:
@@ -51,8 +51,13 @@ class Broadcaster(object):
             else:
                 logger.error(f'Unexpected content type: post_id={post.id}')
 
+            return True
+
+        except exceptions.TelegramForbiddenError:
+            pass
         except Exception as e:
             logger.error(f'Content sending error: user_id={user_id}, post_id={post.id}', exc_info=e)
+        return False
 
 
     @classmethod
@@ -69,7 +74,11 @@ class Broadcaster(object):
 
         if is_for_all_users:
             users_ids = await User.all()
-        else:
+        elif is_registered_meditation and not is_registered_days:  # only for meditation
+            users_ids = await User.filter(is_registered_meditation=is_registered_meditation).all()
+        elif is_registered_days and not is_registered_meditation:  # only for days
+            users_ids = await User.filter(is_registered_days=is_registered_days).all()
+        else:  # just by picked status
             users_ids = await User.filter(
                 Q(is_registered_meditation=is_registered_meditation) | Q(is_registered_days=is_registered_days),
             ).all()
@@ -82,10 +91,14 @@ class Broadcaster(object):
             for user in user_batch:
                 # send mailing from admin panel
                 if broadcaster_post:
+                    is_sent = False
                     try:
-                        await cls.__send_content_message(post=broadcaster_post, user_id=user.user_id)
+                        is_sent = await cls.__send_content_message(post=broadcaster_post, user_id=user.user_id)
                     except Exception as e:
                         logger.error(f'Error in mailing from admin panel, user_id={user.user_id}', exc_info=e)
+
+                    # add log
+                    await MailingLog.create(user_id=user.user_id, is_sent=is_sent)
 
                 # send mailing via /send
                 else:
@@ -115,6 +128,7 @@ class Broadcaster(object):
                 logger.error(f'Error in mailing from admin panel, user_id={order.user_id}', exc_info=e)
 
         else:  # mailing
+            await MailingLog.all().delete()
             await cls.send_content_to_users(
                 bot=bot,
                 broadcaster_post=post,
