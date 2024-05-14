@@ -5,11 +5,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, StateFilter
 from aiogram_dialog import DialogManager, StartMode
 from core.states.main_menu import MainMenuStateGroup
-from core.states.registration import RegistrationStateGroup
-from core.states.support import SupportStateGroup
 from core.utils.texts import set_user_commands, set_admin_commands, _
 from core.database.models import User, Post, Dispatcher
-from core.keyboards.inline import support_kb, followed_kb, approved_kb
+from core.keyboards.inline import followed_kb, approved_kb
 from settings import settings
 
 
@@ -97,5 +95,8 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
             send_at=send_at,
         )
 
-    # going to the main menu
-    await dialog_manager.start(state=MainMenuStateGroup.main_menu, mode=StartMode.RESET_STACK)
+    # start general registration or going to the main menu if registered
+    if user.is_registered:
+        await dialog_manager.start(state=MainMenuStateGroup.main_menu, mode=StartMode.RESET_STACK)
+    else:
+        await dialog_manager.start(state=MainMenuStateGroup.general_registration, mode=StartMode.RESET_STACK)

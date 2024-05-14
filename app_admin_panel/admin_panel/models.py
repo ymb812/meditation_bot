@@ -10,6 +10,7 @@ class User(models.Model):
 
     user_id = models.BigIntegerField(primary_key=True, db_index=True)
     username = models.CharField(max_length=32, null=True, blank=True)
+    is_registered = models.BooleanField(default=False, verbose_name='Зарегистрирован')
     is_registered_meditation = models.BooleanField(default=False, verbose_name='Медитации')
     is_registered_days = models.BooleanField(default=False, verbose_name='Счастливые дни')
     is_user_agreement_accepted = models.BooleanField(default=False, verbose_name='Пользовательское соглашение')
