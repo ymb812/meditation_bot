@@ -13,7 +13,7 @@ main_menu_dialog = Dialog(
     # general registration
     Window(
         Const(text='Пожалуйста, зарегистрируйтесь для доступа к боту'),
-        Button(Const(text=_('REGISTER_BUTTON')), id='general_registration', on_click=CallBackHandler.start_general_registration),
+        Button(Const(text=_('Зарегистрироваться')), id='general_registration', on_click=CallBackHandler.start_general_registration),
         state=MainMenuStateGroup.general_registration,
     ),
 
