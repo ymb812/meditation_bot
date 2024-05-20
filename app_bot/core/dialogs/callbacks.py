@@ -46,6 +46,15 @@ class CallBackHandler:
 
         await dialog_manager.switch_to(MainMenuStateGroup.days_1, show_mode=ShowMode.DELETE_AND_SEND)
 
+    @staticmethod
+    async def start_general_registration(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        await dialog_manager.start(state=RegistrationStateGroup.fio_input, data=dialog_manager.dialog_data)
+
 
     @staticmethod
     async def start_registration_meditation(
@@ -54,25 +63,23 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        user = await User.get(user_id=callback.from_user.id)
+        await User.filter(user_id=callback.from_user.id).update(
+            is_registered_meditation=True,
+        )
 
         # send already registered msg from DB - for meditation
-        if user.is_registered_meditation:
-            registered_post = await Post.get_or_none(id=settings.registered_post_id)
-            if registered_post:
-                await dialog_manager.event.bot.send_message(
-                    chat_id=callback.from_user.id, text=registered_post.text, reply_markup=support_kb()
-                )
-            else:
-                await dialog_manager.event.bot.send_message(
-                    chat_id=callback.from_user.id, text=_('REGISTERED'), reply_markup=support_kb()
-                )
-
-            await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
-
+        registered_post = await Post.get_or_none(id=settings.registered_post_id)
+        if registered_post:
+            await dialog_manager.event.bot.send_message(
+                chat_id=callback.from_user.id, text=registered_post.text,
+            )
         else:
-            # going to the registration with start data of reg_type
-            await dialog_manager.start(state=RegistrationStateGroup.fio_input, data=dialog_manager.dialog_data)
+            await dialog_manager.event.bot.send_message(
+                chat_id=callback.from_user.id, text=_('REGISTERED'),
+            )
+
+        await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
+
 
     @staticmethod
     async def start_registration_days(
@@ -81,17 +88,14 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        user = await User.get(user_id=callback.from_user.id)
+        await User.filter(user_id=callback.from_user.id).update(
+            is_registered_days=True,
+        )
 
         # send already registered msg from DB - for days
-        if user.is_registered_days:
-            days_post = await Post.get_or_none(id=settings.days_post_id)
-            await callback.message.answer_photo(photo=days_post.photo_file_id, caption=days_post.text)
-            await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
-
-        else:
-            # going to the registration with start data of reg_type
-            await dialog_manager.start(state=RegistrationStateGroup.fio_input, data=dialog_manager.dialog_data)
+        days_post = await Post.get_or_none(id=settings.days_post_id)
+        await callback.message.answer_photo(photo=days_post.photo_file_id, caption=days_post.text)
+        await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
 
 
     @staticmethod
@@ -156,30 +160,11 @@ class CallBackHandler:
     ):
         user = await User.get(user_id=callback.from_user.id)
 
-        # check registration type (meditation/days)
-        if dialog_manager.start_data['reg_type'] == 'meditation':
-            user.is_registered_meditation = True
-        elif dialog_manager.start_data['reg_type'] == 'days':
-            user.is_registered_days = True
+        user.is_registered = True
         user.fio = dialog_manager.dialog_data['fio']
         user.phone = dialog_manager.dialog_data['phone']
         user.email = dialog_manager.dialog_data['email']
         await user.save()
-
-        # send registered msg for meditations
-        if dialog_manager.start_data['reg_type'] == 'meditation':
-            registered_post = await Post.get_or_none(id=settings.registered_post_id)
-            if registered_post:
-                await callback.message.answer(text=registered_post.text, reply_markup=ReplyKeyboardRemove())
-            else:
-                await callback.message.answer(text=_('REGISTERED'), reply_markup=ReplyKeyboardRemove())
-
-            await callback.message.answer(text=_('CHECK_QUESTION'), reply_markup=support_kb())
-
-        # send already_registered msg for days (text or file with days)
-        elif dialog_manager.start_data['reg_type'] == 'days':
-            days_post = await Post.get_or_none(id=settings.days_post_id)
-            await callback.message.answer_photo(photo=days_post.photo_file_id, caption=days_post.text)
 
         # delete notification order
         await Dispatcher.filter(post_id=settings.notification_post_id, user_id=callback.from_user.id).delete()

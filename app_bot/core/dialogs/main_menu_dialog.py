@@ -10,9 +10,16 @@ from core.utils.texts import _
 
 
 main_menu_dialog = Dialog(
+    # general registration
+    Window(
+        Const(text='Пожалуйста, зарегистрируйтесь для доступа к боту'),
+        Button(Const(text=_('Зарегистрироваться')), id='general_registration', on_click=CallBackHandler.start_general_registration),
+        state=MainMenuStateGroup.general_registration,
+    ),
+
     # main menu
     Window(
-        Const(text='Выберите, на что хотите зарегистрироваться'),
+        Const(text='Выберите действие'),
         Button(Const(text='Безоплатные медитации'), id='meditation', on_click=CallBackHandler.start_meditation),
         Button(Const(text='Счастливые даты '), id='days_1', on_click=CallBackHandler.start_days),
         state=MainMenuStateGroup.main_menu,
