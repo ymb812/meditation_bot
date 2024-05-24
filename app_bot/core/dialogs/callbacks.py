@@ -1,4 +1,5 @@
 import re
+import asyncio
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
@@ -22,15 +23,23 @@ class CallBackHandler:
     ):
         # send 2 welcome msgs from DB
         bot = dialog_manager.event.bot
-        welcome_post = await Post.get(id=settings.welcome_post_id)
         welcome_post_id_2 = await Post.get(id=settings.welcome_post_id_2)
-        await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post.video_note_id)
+
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text=welcome_post_id_2.text,
+        )
+        await bot.send_chat_action(chat_id=callback.from_user.id, action='record_video_note')
+        await asyncio.sleep(0.5)
         await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post_id_2.video_note_id)
 
-        dialog_manager.dialog_data['welcome_post_text'] = welcome_post.text
-        dialog_manager.dialog_data['reg_type'] = 'meditation'
+        # TODO: CREATE ORDER FOR BG TO CHANGE STATE IN 15 MINUTES  !!!
 
-        await dialog_manager.switch_to(MainMenuStateGroup.meditation, show_mode=ShowMode.DELETE_AND_SEND)
+        dialog_manager.dialog_data['welcome_post_text'] = welcome_post_id_2.text
+        dialog_manager.dialog_data['reg_type'] = 'meditation'
+        dialog_manager.dialog_data['main_menu_post_id'] = 1007
+
+        await dialog_manager.switch_to(MainMenuStateGroup.start_cards, show_mode=ShowMode.DELETE_AND_SEND)
 
 
     @staticmethod
@@ -40,12 +49,22 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        dialog_manager.dialog_data['welcome_post_text_1'] = 'Вводное сообщение для дней'
-        dialog_manager.dialog_data['welcome_post_text_2'] = 'В 1 месяц выдаем счастливые даты и тд бесплатно'
+        dialog_manager.dialog_data['welcome_post_text_1'] \
+            = '''Счастливые числа - это наиболее удачные дни месяца для:
+✨Принятия важных решений
+✨Любых итераций с деньгами (оплат, заключения сделок и тд)
+
+Если у вас есть задача, которая никак не сдвигается с места, попробуйте приступить к ней в «счастливую» дату.
+
+Любой сложный разговор лучше отложить до «счастливой» даты.
+
+Зная счастливые числа месяца вы сможете спланировать важные задачи так, чтобы они прошли максимально легко и приятно для вас 😘'''
+
         dialog_manager.dialog_data['reg_type'] = 'days'
 
         await dialog_manager.switch_to(MainMenuStateGroup.days_1, show_mode=ShowMode.DELETE_AND_SEND)
 
+    # TODO: USELESS
     @staticmethod
     async def start_general_registration(
             callback: CallbackQuery,
@@ -57,30 +76,35 @@ class CallBackHandler:
 
 
     @staticmethod
-    async def start_registration_meditation(
+    async def selected_card(
+            callback: CallbackQuery,
+            widget: Select,
+            dialog_manager: DialogManager,
+            item_id: str,
+    ):
+        dialog_manager.dialog_data['card_id'] = item_id
+        await dialog_manager.switch_to(MainMenuStateGroup.card)
+
+
+    @staticmethod
+    async def go_to_socials(
             callback: CallbackQuery,
             widget: Button | Select,
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        await User.filter(user_id=callback.from_user.id).update(
-            is_registered_meditation=True,
+        # send voice
+        voice = await Post.get(id=1011)
+        await dialog_manager.event.bot.send_voice(
+            chat_id=callback.from_user.id,
+            voice=voice.sticker_file_id,
+            caption=voice.text,
         )
 
-        # send already registered msg from DB - for meditation
-        registered_post = await Post.get_or_none(id=settings.registered_post_id)
-        if registered_post:
-            await dialog_manager.event.bot.send_message(
-                chat_id=callback.from_user.id, text=registered_post.text,
-            )
-        else:
-            await dialog_manager.event.bot.send_message(
-                chat_id=callback.from_user.id, text=_('REGISTERED'),
-            )
-
-        await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
+        await dialog_manager.switch_to(MainMenuStateGroup.socials, show_mode=ShowMode.DELETE_AND_SEND)
 
 
+    # TODO: USELESS
     @staticmethod
     async def start_registration_days(
             callback: CallbackQuery,

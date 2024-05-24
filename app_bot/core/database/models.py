@@ -109,3 +109,13 @@ class MailingLog(Model):
     user = fields.ForeignKeyField('models.User', to_field='user_id')
     is_sent = fields.BooleanField()
     created_at = fields.DatetimeField(auto_now_add=True)
+
+
+class Card(Model):
+    class Meta:
+        table = 'cards'
+
+    id = fields.BigIntField(pk=True)
+    text = fields.TextField(null=True)
+    photo_file_id = fields.CharField(max_length=256, null=True)
+    order_priority = fields.IntField(unique=True)

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ExportActionModelAdmin, ImportExportModelAdmin
 from import_export.resources import ModelResource
-from admin_panel.models import User, SupportRequest, Dispatcher, Post, MailingLog
+from admin_panel.models import User, SupportRequest, Dispatcher, Post, MailingLog, Card
 
 
 class CustomImportExport(ImportExportModelAdmin, ExportActionModelAdmin):
@@ -43,6 +43,12 @@ class OrderAdmin(CustomImportExport):
 @admin.register(MailingLog)
 class MailingLogAdmin(CustomImportExport):
     list_display = [field.name for field in MailingLog._meta.fields]
+
+
+@admin.register(Card)
+class CardAdmin(CustomImportExport):
+    list_display = [field.name for field in Card._meta.fields]
+    list_editable = [field.name for field in Card._meta.fields if field.name != 'id' and field.name != 'created_at']
 
 
 # sort models from admin.py by their registering (not alphabetically)

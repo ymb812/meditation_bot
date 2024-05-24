@@ -63,7 +63,7 @@ async def excel_stats(message: types.Message):
 
 
 # get file_id for broadcaster
-@router.message(F.video | F.video_note | F.photo | F.audio | F.animation | F.sticker | F.document)
+@router.message(F.video | F.video_note | F.photo | F.audio | F.animation | F.sticker | F.document | F.voice)
 async def get_hash(message: types.Message):
     if (await User.get(user_id=message.from_user.id)).status != 'admin':
         return
@@ -82,6 +82,8 @@ async def get_hash(message: types.Message):
         hashsum = message.sticker.file_id
     elif message.document:
         hashsum = message.document.file_id
+    elif message.voice:
+        hashsum = message.voice.file_id
     else:
         return
 

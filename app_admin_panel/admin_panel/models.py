@@ -100,3 +100,16 @@ class MailingLog(models.Model):
 
     def __str__(self):
         return f'{self.id}'
+
+
+class Card(models.Model):
+    class Meta:
+        db_table = 'cards'
+        ordering = ['order_priority']
+        verbose_name = 'Карты'
+        verbose_name_plural = verbose_name
+
+    id = models.AutoField(primary_key=True, db_index=True)
+    text = models.TextField(blank=True, null=True)
+    photo_file_id = models.CharField(max_length=256, blank=True, null=True)
+    order_priority = models.IntegerField(unique=True, verbose_name='Номер в списке')

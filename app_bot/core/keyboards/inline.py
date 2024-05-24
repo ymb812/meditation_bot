@@ -26,6 +26,6 @@ def followed_kb() -> InlineKeyboardMarkup:
 
 def approved_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    kb.button(text='Принять соглашение', callback_data='approve_agreement')
+    kb.button(text='Хочу! (Принять соглашение)', callback_data='approve_agreement')
     kb.adjust(1)
     return kb.as_markup(resize_keyboard=True)
