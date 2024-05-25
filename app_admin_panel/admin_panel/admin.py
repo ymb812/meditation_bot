@@ -30,7 +30,8 @@ class SupportRequestAdmin(CustomImportExport):
 
 @admin.register(Dispatcher)
 class OrderAdmin(CustomImportExport):
-    list_display = [field.name for field in Dispatcher._meta.fields]
+    exclude = ('is_bg', )
+    list_display = [field.name for field in Dispatcher._meta.fields if field.name != 'is_bg']
     list_editable = ('is_registered_meditation', 'is_registered_days', 'is_for_all_users')
 
 

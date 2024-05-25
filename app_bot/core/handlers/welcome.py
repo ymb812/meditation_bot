@@ -94,7 +94,6 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
 
     # create order for notification if there is no
     send_at = datetime.datetime.now() - datetime.timedelta(hours=1)
-    logger.info(f'{send_at}')
     if not (await Dispatcher.get_or_none(post_id=settings.notification_post_id, user_id=callback.from_user.id)):
         await Dispatcher.create(
             post_id=settings.notification_post_id,

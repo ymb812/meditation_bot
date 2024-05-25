@@ -1,12 +1,11 @@
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Const, Format
-from aiogram_dialog.widgets.kbd import Button, Start, SwitchTo, Select
+from aiogram_dialog.widgets.kbd import Button, SwitchTo, Select
 from core.dialogs.callbacks import CallBackHandler
 from core.dialogs.getters import get_input_data, get_main_media_content, get_card
 from core.dialogs.custom_content import CustomPager
 from core.states.main_menu import MainMenuStateGroup
-from core.states.support import SupportStateGroup
 from core.utils.texts import _
 
 
@@ -32,8 +31,8 @@ main_menu_dialog = Dialog(
     Window(
         DynamicMedia(selector='media_content_2'),
         Format(text='{msg_text[1]}'),
-        SwitchTo(Const(text='ВЫБРАТЬ КАРТУ'), id='pick_cards', state=MainMenuStateGroup.pick_card),
-        SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_menu', state=MainMenuStateGroup.main_menu),
+        Button(Const(text='ВЫБРАТЬ КАРТУ'), id='pick_cards', on_click=CallBackHandler.go_to_pick_cards),
+        #SwitchTo(Const(text=_('BACK_BUTTON')), id='switch_to_menu', state=MainMenuStateGroup.main_menu),
         getter=get_main_media_content,
         state=MainMenuStateGroup.start_cards,
     ),

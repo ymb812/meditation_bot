@@ -59,6 +59,7 @@ class Dispatcher(models.Model):
     is_registered_meditation = models.BooleanField(default=False, verbose_name='Медитации')
     is_registered_days = models.BooleanField(default=False, verbose_name='Счастливые даты')
     is_for_all_users = models.BooleanField(default=False, verbose_name='Всем пользователям')
+    is_bg = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     send_at = models.DateTimeField()
 

@@ -78,6 +78,7 @@ class Dispatcher(Model):
     is_registered_meditation = fields.BooleanField(default=False)
     is_registered_days = fields.BooleanField(default=False)
     is_for_all_users = fields.BooleanField(default=False)
+    is_bg = fields.BooleanField(default=False)
     user = fields.ForeignKeyField('models.User', to_field='user_id', null=True)
     send_at = fields.DatetimeField()
 

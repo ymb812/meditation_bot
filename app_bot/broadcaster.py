@@ -120,6 +120,11 @@ class Broadcaster(object):
             logger.error(f'Get post error', exc_info=e)
             return
 
+        # ignore changing state orders
+        if order.is_bg:
+            await order.delete()
+            return
+
         # sending
         if order.user_id:  # for notifications
             try:

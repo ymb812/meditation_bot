@@ -7,6 +7,7 @@ from setup import register
 from core.handlers import routers
 from core.dialogs import dialogues
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
+from scheduler import scheduler
 
 
 bot = Bot(settings.bot_token.get_secret_value(), parse_mode='HTML')
@@ -22,9 +23,9 @@ setup_dialogs(dp)
 for _r in routers + dialogues:
     dp.include_router(_r)
 
-
 async def main():
     async with register():
+        scheduler.start()
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 

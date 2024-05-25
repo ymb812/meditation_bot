@@ -1,6 +1,8 @@
 import re
 import asyncio
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+import pytz
+from datetime import datetime, timedelta
+from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button, Select
@@ -8,9 +10,15 @@ from aiogram_dialog.api.entities import ShowMode
 from core.states.main_menu import MainMenuStateGroup
 from core.states.registration import RegistrationStateGroup
 from core.database.models import User, SupportRequest, Dispatcher, Post
-from core.keyboards.inline import support_kb
 from core.utils.texts import _
 from settings import settings
+from scheduler import scheduler
+
+async def change_state_via_bg(user_dialog, user_id: int):
+    # set dialog via bg if there is an active order
+    if await Dispatcher.get_or_none(is_bg=True, user_id=user_id):
+        await user_dialog.start(MainMenuStateGroup.socials)
+
 
 
 class CallBackHandler:
@@ -33,13 +41,38 @@ class CallBackHandler:
         await asyncio.sleep(0.5)
         await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post_id_2.video_note_id)
 
-        # TODO: CREATE ORDER FOR BG TO CHANGE STATE IN 15 MINUTES  !!!
+        # create order to change state in 15 minutes
+        timezone = pytz.timezone('Europe/Moscow')
+        send_at = datetime.now(timezone) + timedelta(minutes=15)
+        if not (await Dispatcher.get_or_none(is_bg=True, user_id=callback.from_user.id)):
+            await Dispatcher.create(
+                post_id=1,  # useless
+                is_bg=True,
+                user_id=callback.from_user.id,
+                send_at=send_at,
+            )
+
+        # create scheduler task, cuz we need dialog_manager.bg
+        send_at = send_at - timedelta(seconds=15)
+        user_dialog = dialog_manager.bg(user_id=callback.from_user.id, chat_id=callback.from_user.id)
+        scheduler.add_job(change_state_via_bg, args=(user_dialog, callback.from_user.id), run_date=send_at, misfire_grace_time=10)
 
         dialog_manager.dialog_data['welcome_post_text'] = welcome_post_id_2.text
         dialog_manager.dialog_data['reg_type'] = 'meditation'
-        dialog_manager.dialog_data['main_menu_post_id'] = 1007
 
         await dialog_manager.switch_to(MainMenuStateGroup.start_cards, show_mode=ShowMode.DELETE_AND_SEND)
+
+
+    @staticmethod
+    async def go_to_pick_cards(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        # delete order and go to cards
+        await Dispatcher.filter(is_bg=True, user_id=callback.from_user.id).delete()
+        await dialog_manager.switch_to(state=MainMenuStateGroup.pick_card, show_mode=ShowMode.DELETE_AND_SEND)
 
 
     @staticmethod
