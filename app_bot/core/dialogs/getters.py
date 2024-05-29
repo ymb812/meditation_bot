@@ -17,9 +17,9 @@ async def get_reg_states_content(dialog_manager: DialogManager, **kwargs):
     if post_1.photo_file_id:
         media_content_1 = MediaAttachment(ContentType.PHOTO, url=post_1.photo_file_id)
     if post_2.photo_file_id:
-        media_content_2 = MediaAttachment(ContentType.PHOTO, url=post_1.photo_file_id)
+        media_content_2 = MediaAttachment(ContentType.PHOTO, url=post_2.photo_file_id)
     if post_3.photo_file_id:
-        media_content_3 = MediaAttachment(ContentType.PHOTO, url=post_1.photo_file_id)
+        media_content_3 = MediaAttachment(ContentType.PHOTO, url=post_3.photo_file_id)
 
     return {
         'msg_text': [post_1.text, post_2.text, post_3.text],

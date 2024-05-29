@@ -79,9 +79,9 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
     user = await User.get(user_id=callback.from_user.id)
     if not user.is_user_agreement_accepted:
         user_agreement_post = await Post.get(id=settings.user_agreement_post_id)
-        await bot.send_document(
+        await bot.send_photo(
             chat_id=callback.from_user.id,
-            document=user_agreement_post.document_file_id,
+            photo=user_agreement_post.photo_file_id,
             caption=user_agreement_post.text,
             reply_markup=approved_kb(),
         )
