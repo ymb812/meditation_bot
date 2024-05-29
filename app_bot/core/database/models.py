@@ -78,6 +78,7 @@ class Dispatcher(Model):
     is_registered_meditation = fields.BooleanField(default=False)
     is_registered_days = fields.BooleanField(default=False)
     is_for_all_users = fields.BooleanField(default=False)
+    is_bg = fields.BooleanField(default=False)
     user = fields.ForeignKeyField('models.User', to_field='user_id', null=True)
     send_at = fields.DatetimeField()
 
@@ -109,3 +110,13 @@ class MailingLog(Model):
     user = fields.ForeignKeyField('models.User', to_field='user_id')
     is_sent = fields.BooleanField()
     created_at = fields.DatetimeField(auto_now_add=True)
+
+
+class Card(Model):
+    class Meta:
+        table = 'cards'
+
+    id = fields.BigIntField(pk=True)
+    text = fields.TextField(null=True)
+    photo_file_id = fields.CharField(max_length=256, null=True)
+    order_priority = fields.IntField(unique=True)
