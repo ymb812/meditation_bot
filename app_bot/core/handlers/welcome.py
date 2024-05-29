@@ -92,17 +92,17 @@ async def followed_handler(callback: types.CallbackQuery | None = None, message:
     else:
         await set_user_commands(bot=bot, scope=types.BotCommandScopeChat(chat_id=callback.from_user.id))
 
-    # create order for notification if there is no
-    send_at = datetime.datetime.now() - datetime.timedelta(hours=1)
-    if not (await Dispatcher.get_or_none(post_id=settings.notification_post_id, user_id=callback.from_user.id)):
-        await Dispatcher.create(
-            post_id=settings.notification_post_id,
-            user_id=callback.from_user.id,
-            send_at=send_at,
-        )
-
     # start general registration or going to the main menu if registered
     if user.is_registered:
         await dialog_manager.start(state=MainMenuStateGroup.main_menu, mode=StartMode.RESET_STACK)
     else:
+        # create order for notification if there is no and user is not registered
+        send_at = datetime.datetime.now() - datetime.timedelta(hours=1)
+        if not (await Dispatcher.get_or_none(post_id=settings.notification_post_id, user_id=callback.from_user.id)):
+            await Dispatcher.create(
+                post_id=settings.notification_post_id,
+                user_id=callback.from_user.id,
+                send_at=send_at,
+            )
+
         await dialog_manager.start(state=RegistrationStateGroup.fio_input, mode=StartMode.RESET_STACK)
