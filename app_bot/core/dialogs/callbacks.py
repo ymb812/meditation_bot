@@ -1,5 +1,8 @@
 import re
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+import asyncio
+import pytz
+from datetime import datetime, timedelta
+from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button, Select
@@ -7,9 +10,15 @@ from aiogram_dialog.api.entities import ShowMode
 from core.states.main_menu import MainMenuStateGroup
 from core.states.registration import RegistrationStateGroup
 from core.database.models import User, SupportRequest, Dispatcher, Post
-from core.keyboards.inline import support_kb
 from core.utils.texts import _
 from settings import settings
+from scheduler import scheduler
+
+async def change_state_via_bg(user_dialog, user_id: int):
+    # set dialog via bg if there is an active order
+    if await Dispatcher.get_or_none(is_bg=True, user_id=user_id):
+        await user_dialog.start(MainMenuStateGroup.socials)
+
 
 
 class CallBackHandler:
@@ -22,15 +31,48 @@ class CallBackHandler:
     ):
         # send 2 welcome msgs from DB
         bot = dialog_manager.event.bot
-        welcome_post = await Post.get(id=settings.welcome_post_id)
         welcome_post_id_2 = await Post.get(id=settings.welcome_post_id_2)
-        await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post.video_note_id)
+
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text=welcome_post_id_2.text,
+        )
+        await bot.send_chat_action(chat_id=callback.from_user.id, action='record_video_note')
+        await asyncio.sleep(0.5)
         await bot.send_video_note(chat_id=callback.from_user.id, video_note=welcome_post_id_2.video_note_id)
 
-        dialog_manager.dialog_data['welcome_post_text'] = welcome_post.text
+        # create order to change state in 15 minutes
+        timezone = pytz.timezone('Europe/Moscow')
+        send_at = datetime.now(timezone) + timedelta(minutes=15)
+        if not (await Dispatcher.get_or_none(is_bg=True, user_id=callback.from_user.id)):
+            await Dispatcher.create(
+                post_id=1,  # useless
+                is_bg=True,
+                user_id=callback.from_user.id,
+                send_at=send_at,
+            )
+
+        # create scheduler task, cuz we need dialog_manager.bg
+        send_at = send_at - timedelta(seconds=15)
+        user_dialog = dialog_manager.bg(user_id=callback.from_user.id, chat_id=callback.from_user.id)
+        scheduler.add_job(change_state_via_bg, args=(user_dialog, callback.from_user.id), run_date=send_at, misfire_grace_time=10)
+
+        dialog_manager.dialog_data['welcome_post_text'] = welcome_post_id_2.text
         dialog_manager.dialog_data['reg_type'] = 'meditation'
 
-        await dialog_manager.switch_to(MainMenuStateGroup.meditation, show_mode=ShowMode.DELETE_AND_SEND)
+        await dialog_manager.switch_to(MainMenuStateGroup.start_cards, show_mode=ShowMode.DELETE_AND_SEND)
+
+
+    @staticmethod
+    async def go_to_pick_cards(
+            callback: CallbackQuery,
+            widget: Button | Select,
+            dialog_manager: DialogManager,
+            item_id: str | None = None,
+    ):
+        # delete order and go to cards
+        await Dispatcher.filter(is_bg=True, user_id=callback.from_user.id).delete()
+        await dialog_manager.switch_to(state=MainMenuStateGroup.pick_card, show_mode=ShowMode.DELETE_AND_SEND)
 
 
     @staticmethod
@@ -40,12 +82,23 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        dialog_manager.dialog_data['welcome_post_text_1'] = 'Вводное сообщение для дней'
-        dialog_manager.dialog_data['welcome_post_text_2'] = 'В 1 месяц выдаем счастливые даты и тд бесплатно'
+        dialog_manager.dialog_data['welcome_post_text_1'] \
+            = '''<b>Счастливые числа - это самые удачные дни месяца для:</b>
+
+✨Принятия важных решений
+✨Любых денежных операций (оплат, заключения сделок и тд)
+
+Если у вас есть задача, которая никак не сдвигается с места, попробуйте приступить к ней в «счастливую» дату.
+
+Любой сложный разговор лучше отложить до «счастливой» даты.
+
+Зная счастливые числа месяца вы сможете спланировать важные задачи так, чтобы они прошли максимально легко и приятно для вас😘 '''
+
         dialog_manager.dialog_data['reg_type'] = 'days'
 
         await dialog_manager.switch_to(MainMenuStateGroup.days_1, show_mode=ShowMode.DELETE_AND_SEND)
 
+    # TODO: USELESS
     @staticmethod
     async def start_general_registration(
             callback: CallbackQuery,
@@ -57,30 +110,27 @@ class CallBackHandler:
 
 
     @staticmethod
-    async def start_registration_meditation(
+    async def selected_card(
+            callback: CallbackQuery,
+            widget: Select,
+            dialog_manager: DialogManager,
+            item_id: str,
+    ):
+        dialog_manager.dialog_data['card_id'] = item_id
+        await dialog_manager.switch_to(MainMenuStateGroup.card)
+
+
+    @staticmethod
+    async def go_to_socials(
             callback: CallbackQuery,
             widget: Button | Select,
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
-        await User.filter(user_id=callback.from_user.id).update(
-            is_registered_meditation=True,
-        )
-
-        # send already registered msg from DB - for meditation
-        registered_post = await Post.get_or_none(id=settings.registered_post_id)
-        if registered_post:
-            await dialog_manager.event.bot.send_message(
-                chat_id=callback.from_user.id, text=registered_post.text,
-            )
-        else:
-            await dialog_manager.event.bot.send_message(
-                chat_id=callback.from_user.id, text=_('REGISTERED'),
-            )
-
-        await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
+        await dialog_manager.switch_to(MainMenuStateGroup.socials, show_mode=ShowMode.DELETE_AND_SEND)
 
 
+    # TODO: USELESS
     @staticmethod
     async def start_registration_days(
             callback: CallbackQuery,

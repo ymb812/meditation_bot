@@ -12,7 +12,7 @@ services:
     container_name: bot_with_django_postgres
     restart: 'always'
     ports:
-      - '5432'
+      - '5432:5432'
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
     networks:

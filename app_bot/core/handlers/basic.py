@@ -40,4 +40,4 @@ async def approve_handler(callback: types.CallbackQuery, bot: Bot, dialog_manage
     )
 
     await callback.message.edit_reply_markup(reply_markup=None)
-    await followed_handler(callback=callback, bot=bot, dialog_manager=dialog_manager)
+    await followed_handler(callback=callback, bot=bot, dialog_manager=dialog_manager, send_video=False)

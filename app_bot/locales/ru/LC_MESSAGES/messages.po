@@ -74,7 +74,7 @@ msgstr "Подтвердить номер телефона"
 
 
 msgid "FOLLOWED_BUTTON"
-msgstr "✅ Подписался"
+msgstr "Готово ✅"
 
 
 # texts
@@ -161,7 +161,7 @@ msgstr "Введите корректный номер\n\n"
 
 # format
 msgid "NOT_FOLLOWED"
-msgstr "Для начала подпишитесь на канал Веры:\n"
+msgstr "Чтобы получить подарки, подпишитесь на канал Веры:\n"
 "{channel_link}"
 
 
@@ -177,11 +177,13 @@ msgstr "ℹ️ Рассылка завершена\n\n"
 
 
 msgid "CONFIRM_INPUT_DATA"
-msgstr "Данные введены верно?\n\n"
+msgstr "Проверьте ваши данные:\n\n"
 
-"<b>ФИО:</b> {fio}\n"
-"<b>Телефон:</b> {phone}\n"
+"<b>Имя:</b> {fio}\n"
 "<b>Почта:</b> {email}\n"
+"<b>Телефон:</b> {phone}\n\n"
+
+"Все верно?"
 
 
 msgid "QUESTION_FROM_USER"
