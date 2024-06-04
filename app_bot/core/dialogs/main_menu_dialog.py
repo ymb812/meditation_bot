@@ -10,13 +10,6 @@ from core.utils.texts import _
 
 
 main_menu_dialog = Dialog(
-    # general registration   # TODO: USELESS
-    Window(
-        Const(text='Пожалуйста, зарегистрируйтесь для доступа к боту'),
-        Button(Const(text=_('Зарегистрироваться')), id='general_registration', on_click=CallBackHandler.start_general_registration),
-        state=MainMenuStateGroup.general_registration,
-    ),
-
     # main menu
     Window(
         DynamicMedia(selector='media_content_1'),

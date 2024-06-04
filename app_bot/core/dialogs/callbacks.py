@@ -29,6 +29,10 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
+        await User.filter(user_id=callback.from_user.id).update(
+            is_registered_meditation=True,
+        )
+
         # send 2 welcome msgs from DB
         bot = dialog_manager.event.bot
         welcome_post_id_2 = await Post.get(id=settings.welcome_post_id_2)
@@ -82,6 +86,10 @@ class CallBackHandler:
             dialog_manager: DialogManager,
             item_id: str | None = None,
     ):
+        await User.filter(user_id=callback.from_user.id).update(
+            is_registered_days=True,
+        )
+
         dialog_manager.dialog_data['welcome_post_text_1'] \
             = '''<b>Счастливые числа - это самые удачные дни месяца для:</b>
 
@@ -97,16 +105,6 @@ class CallBackHandler:
         dialog_manager.dialog_data['reg_type'] = 'days'
 
         await dialog_manager.switch_to(MainMenuStateGroup.days_1, show_mode=ShowMode.DELETE_AND_SEND)
-
-    # TODO: USELESS
-    @staticmethod
-    async def start_general_registration(
-            callback: CallbackQuery,
-            widget: Button | Select,
-            dialog_manager: DialogManager,
-            item_id: str | None = None,
-    ):
-        await dialog_manager.start(state=RegistrationStateGroup.fio_input, data=dialog_manager.dialog_data)
 
 
     @staticmethod
@@ -128,24 +126,6 @@ class CallBackHandler:
             item_id: str | None = None,
     ):
         await dialog_manager.switch_to(MainMenuStateGroup.socials, show_mode=ShowMode.DELETE_AND_SEND)
-
-
-    # TODO: USELESS
-    @staticmethod
-    async def start_registration_days(
-            callback: CallbackQuery,
-            widget: Button | Select,
-            dialog_manager: DialogManager,
-            item_id: str | None = None,
-    ):
-        await User.filter(user_id=callback.from_user.id).update(
-            is_registered_days=True,
-        )
-
-        # send already registered msg from DB - for days
-        days_post = await Post.get_or_none(id=settings.days_post_id)
-        await callback.message.answer_photo(photo=days_post.photo_file_id, caption=days_post.text)
-        await dialog_manager.switch_to(MainMenuStateGroup.main_menu, show_mode=ShowMode.DELETE_AND_SEND)
 
 
     @staticmethod
